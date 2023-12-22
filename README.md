@@ -1,3 +1,2 @@
 # Question-Everything
 
-"Question Everything" is an interactive, real-time trivia quiz game designed to engage users with a wide variety of questions sourced from the Open Trivia Database. Built using Node.js and Express.js for efficient server-side management, it utilizes Handlebars.js for dynamic content rendering and Sequelize ORM with MySQL for robust data handling. The game features secure user authentication, real-time gameplay through Socket.IO, and a responsive, polished UI for an immersive quiz experience. Deployed on Heroku, "Question Everything" offers an entertaining and educational platform for users to test their knowledge, compete with others, and learn interesting facts across multiple categories. Perfect for quiz enthusiasts and casual players alike!
