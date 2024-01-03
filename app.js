@@ -7,14 +7,14 @@ const path = require('path');
 const session = require('express-session');
 
 // Database and ORM
-const sequelize = require('sequelize');
-const sequelizeStore = require('connect-session-sequelize')(session.Store);
+const Sequelize = require('sequelize');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 // Template Engine
-const exphbs = require('express-handlebars');
+const { engine } = require('express-handlebars');
 
 // Real-time communication
-const socketIo = require('socket.io');
+const socketIO = require('socket.io');
 
 // Enviroment variables 
 require('dotenv').config();
@@ -24,10 +24,10 @@ const app = express();
 const server = http.createServer(app);
 
 // Initialize Socket.IO
-const io = socketIo(server);
+const io = socketIO(server);
 
 // Setting up Sequalize with MySQL
-const sequelize = new sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_USER, process.env.DB_PASSWORD, {
+const sequelizeInstance = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
     host: process.env.DB_HOST,
     dialect: 'mysql',
     logging: false
@@ -35,29 +35,29 @@ const sequelize = new sequelize(process.env.DB_NAME, process.env.DB_USER, proces
 
 // Session configuration
 app.use(session({
-    secret: 'super secret',
-    store: new sequelize.SequelizeStore({
-        db: sequelize
+    secret: process.env.SESSION_SECRET,
+    store: new SequelizeStore({
+        db: sequelizeInstance
     }),
     resave: false,
     saveUninitialized: false,
     cookie: {}
 }));
 
-// Body Parser Middleware to handle JSON and URL encoed data
+// Body Parser Middleware to handle JSON and URL encoded data
 app.use(express.json());
-app.use(express.urlencoded({ extende: false }));
+app.use(express.urlencoded({ extended: false }));
 
 // Static files middleware (for CSS, JS, Images, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Handlebars Middleware 
-app.engine('handlebars', exphbs());
+app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 
 // Define routes 
 app.get('/', (req, res) => {
-    res.render('home', { title: 'Get ready to Question Everthing!'});
+    res.render('home', { title: 'Get ready to Question Everything!'});
 });
 
 // Socket.IO connection
