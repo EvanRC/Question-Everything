@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
     <title>Document</title>
 </head>
 <body>
     <div class="container">
-        <label for="categoryDropdown">Select Category:</label>
-        <select id="categoryDropdown" onchange="getQuestions()">
+        <label for="dropdown">Select Category:</label>
+        <select id="categoryDropdown">
             <option value="" selected disabled>Select a Category</option>
             <option value="api1">General Knowledge</option>
             <option value="api2">Sports</option>
@@ -19,8 +20,30 @@
             <option value="api5">Video Games</option>
             <option value="api6">Celebrities</option>
         </select>
-        <div id="questionList"></div>
+        <label for="dropdown">Select Difficulty</label>
+        <select id="difficultyDropdown">
+            <option value="" selected disabled>Select Difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        
+        <button onclick="searchQuestions()">Search</button>
+        <div id="questionList2"></div>
     </div>
-    <script src="script.js"></script>
+    <script id="question-template" type="text/x-handlebars-template">
+        <div class="question">
+            <h2>{{question}}</h2>
+            <ul>
+                {{#each shuffled_answers}}
+                    <li><button class="answer" data-answer="{{this}}">{{this}}</button></li>
+                {{/each}}
+            </ul>
+        </div>
+    </script>
+    <div class="container">
+        <button id="backButton" onclick="scrollQuestions(-1)">Back</button>
+        <button id="forwardButton" onclick="scrollQuestions(1)">Forward</button>
+    </div>
 </body>
 </html>
