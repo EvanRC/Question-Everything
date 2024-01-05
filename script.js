@@ -1,48 +1,44 @@
+const categoryMapping = {
+    api1: 9,  // General Knowledge
+    api2: 21, // Sports
+    api3: 23, // History
+    api4: 27, // Animals
+    api5: 15, // Video Games
+    api6: 26, // Celebrities
+};
 
-function getQuestions() {
-    const dropdown = document.getElementById('categoryDropdown');
-    const selectedCategory = dropdown.value;
-    const questionListContainer = document.getElementById('questionList');
+let currentQuestionIndex = 0;
+let questionListContainer;
+let data; // Declare data at a broader scope
 
-    const apiEndpoints = {
-        api1: 'https://opentdb.com/api.php?amount=10&category=9',
-        api2: 'https://opentdb.com/api.php?amount=10&category=21',
-        api3: 'https://opentdb.com/api.php?amount=10&category=23',
-        api4: 'https://opentdb.com/api.php?amount=10&category=27',
-        api5: 'https://opentdb.com/api.php?amount=10&category=15',
-        api6: 'https://opentdb.com/api.php?amount=10&category=26',
-    };
+function searchQuestions() {
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    const selectedCategory = categoryMapping[categoryDropdown.value];
 
-    fetch(apiEndpoints[selectedCategory])
+    const difficultyDropdown = document.getElementById('difficultyDropdown');
+    const selectedDifficulty = difficultyDropdown.value;
+
+    if (!selectedCategory || !selectedDifficulty) {
+        alert('Please select both category and difficulty.');
+        return;
+    }
+
+    const apiEndpoint = `https://opentdb.com/api.php?amount=10&category=${selectedCategory}&difficulty=${selectedDifficulty}`;
+
+    fetch(apiEndpoint)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
         })
-        .then(data => {
-            console.log(data)
+        .then(apiData => {
+            data = apiData; // Assign the fetched data to the global variable
+            console.log(data);
+
             if (data.results && Array.isArray(data.results)) {
                 questionListContainer.innerHTML = '';
-
-                data.results.forEach((question, index) => {
-                    const questionElement = document.createElement('div');
-                    questionElement.innerHTML = question.question;
-
-                    const correctAnswerButton = document.createElement('button');
-                    correctAnswerButton.textContent = `Correct Answer: ${question.correct_answer}`;
-                    correctAnswerButton.addEventListener('click', () => handleAnswerClick(question.correct_answer));
-                    questionElement.appendChild(correctAnswerButton);
-
-                    question.incorrect_answers.forEach((incorrectAnswer, i) => {
-                        const incorrectAnswerButton = document.createElement('button');
-                        incorrectAnswerButton.textContent = `Incorrect Answer ${i + 1}: ${incorrectAnswer}`;
-                        incorrectAnswerButton.addEventListener('click', () => handleAnswerClick(incorrectAnswer));
-                        questionElement.appendChild(incorrectAnswerButton);
-                    });
-
-                    questionListContainer.appendChild(questionElement);
-                });
+                renderQuestion(currentQuestionIndex, data);
             } else {
                 console.error('Invalid data structure:', data);
             }
@@ -52,9 +48,64 @@ function getQuestions() {
         });
 }
 
-function handleAnswerClick(answer) {
-    console.log(`Clicked on answer: ${answer}`);
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
 }
+
+function renderQuestion(index, data) {
+    const source = document.getElementById('question-template').innerHTML;
+    const template = Handlebars.compile(source);
+
+    const question = data.results[index];
+    question.question = decodeEntities(question.question);
+    question.correct_answer = decodeEntities(question.correct_answer);
+    question.incorrect_answers = question.incorrect_answers.map(decodeEntities);
+
+    const allAnswers = [question.correct_answer, ...question.incorrect_answers];
+
+    shuffleArray(allAnswers);
+
+    question.shuffled_answers = allAnswers;
+
+    const html = template(question);
+    questionListContainer.innerHTML = html;
+}
+
+function scrollQuestions(direction) {
+    if (!data) {
+        console.error('Data is not available.');
+        return;
+    }
+
+    const totalQuestions = data.results.length;
+
+    currentQuestionIndex += direction;
+
+    if (currentQuestionIndex < 0) {
+        currentQuestionIndex = 0;
+    } else if (currentQuestionIndex >= totalQuestions) {
+        currentQuestionIndex = totalQuestions - 1;
+    }
+
+    renderQuestion(currentQuestionIndex, data);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    questionListContainer = document.getElementById('questionList2');
+
+    if (questionListContainer) {
+        questionListContainer.addEventListener('click', function (event) {
+            const button = event.target;
+            if (button.tagName === 'BUTTON') {
+                const answer = button.getAttribute('data-answer');
+                handleAnswerClick(answer);
+            }
+        });
+    }
+});
 
 function decodeEntities(encodedString) {
     const parser = new DOMParser();
@@ -65,6 +116,11 @@ function decodeEntities(encodedString) {
     decodedString = decodedString.replace(/&amp;/g, '&');
     decodedString = decodedString.replace(/&lt;/g, '<');
     decodedString = decodedString.replace(/&gt;/g, '>');
+    decodedString = decodedString.replace(/&#039;/g, "'");
+    decodedString = decodedString.replace(/&lsquo;/g, "'");
+    decodedString = decodedString.replace(/&rsquo;/g, "'");
+    decodedString = decodedString.replace(/&ldquo;/g, '"');
+    decodedString = decodedString.replace(/&rdquo;/g, '"');
 
     return decodedString;
 }
