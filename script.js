@@ -11,6 +11,7 @@
     let questionListContainer;
     let data;
     let gameOver = false;
+    let score = 0;
 
     function searchQuestions() {
         const timerDisplay = document.getElementById('timerDisplay')
@@ -159,18 +160,34 @@
 
         if (questionListContainer) {
             questionListContainer.addEventListener('click', function (event) {
-                const button = event.target;
-                if (button.tagName === 'BUTTON') {
-                    const answer = button.getAttribute('data-answer');
-                    // handleAnswerClick(answer);
-                    resetTimer();
+            const button = event.target;
+            if (button.tagName === 'BUTTON') {
+                const selectedAnswer = button.getAttribute('data-answer');
+                handleAnswerClick(selectedAnswer);
+                resetTimer();
                 }
             });
         }
-
-    
-
     });
+
+    function handleAnswerClick(selectedAnswer) {
+        // Check the selected answer and update the score
+        checkAnswer(selectedAnswer);
+        // Move to the next question
+        scrollQuestions(1);
+    }
+
+    function checkAnswer(selectedAnswer) {
+        const currentQuestion = data.results[currentQuestionIndex];
+        const correctAnswer = currentQuestion.correct_answer;
+
+        if (selectedAnswer === correctAnswer) {
+            score++;
+            console.log('Correct! Current Score:', score);
+        } else {
+            console.log('Incorrect. Current Score:', score);
+        }
+    }
 
     function decodeEntities(encodedString) {
         const parser = new DOMParser();
