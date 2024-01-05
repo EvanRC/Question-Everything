@@ -9,6 +9,10 @@
     <title>Document</title>
 </head>
 <body>
+    <script id="timer-template" type="text/x-handlebars-template">
+            Time left: {{timeLeft}} seconds
+    </script>
+    <div id="timerDisplay"></div>
     <div class="container">
         <label for="dropdown">Select Category:</label>
         <select id="categoryDropdown">
@@ -45,5 +49,6 @@
         <button id="backButton" onclick="scrollQuestions(-1)">Back</button>
         <button id="forwardButton" onclick="scrollQuestions(1)">Forward</button>
     </div>
+
 </body>
 </html>
