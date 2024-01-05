@@ -3,11 +3,14 @@ const express = require('express');
 const http =  require('http');
 const path = require('path');
 
+// Enviroment variables 
+require('dotenv').config();
+
 // Session and authentication 
 const session = require('express-session');
 
 // Database and ORM
-const Sequelize = require('sequelize');
+const sequelizeInstance = require('./database.js');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 // Template Engine
@@ -16,22 +19,12 @@ const { engine } = require('express-handlebars');
 // Real-time communication
 const socketIO = require('socket.io');
 
-// Enviroment variables 
-require('dotenv').config();
-
 // Initialize Express app and HTTP server 
 const app = express();
 const server = http.createServer(app);
 
 // Initialize Socket.IO
 const io = socketIO(server);
-
-// Setting up Sequalize with MySQL
-const sequelizeInstance = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
-    dialect: 'mysql',
-    logging: false
-});
 
 // Session configuration
 app.use(session({
