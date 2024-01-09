@@ -6,6 +6,10 @@ const path = require('path');
 // Enviroment variables 
 require('dotenv').config();
 
+// Require bcrypt
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 // Session and authentication 
 const session = require('express-session');
 
@@ -36,29 +40,51 @@ app.use(session({
     }),
     resave: false,
     saveUninitialized: false,
-    cookie: {}
+    cookie: {
+        secure: 'auto', // Set to 'auto' for Heroku deployment to handle both HTTP and HTTPS
+        httpOnly: true, // Prevents client side Javascript from accessing the cookie
+        maxAge: 24 * 60 * 60 * 1000 // Sets cookie expiraation to 1 day
+    }
 }));
+
+//Define the isAuthenticated middleware
+function isAuthenticated(req, res, next) {
+    if (req.session.userId) {
+        next(); // If a user is logged in (session exists), proceed to the next middleware/route handeler
+    } else {
+        res.status(401).send('Login required'); // If no user is logged in, send an error response.
+    }
+}
+
 
 // Body Parser Middleware to handle JSON and URL encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Post endpoint for registering a new User.
-app.post('./register', async (req, res) => { 
+app.post('/register', async (req, res) => { 
     try {
+        // Hash the user's password
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
         // Attempt to create a new user using the model.
         // The user's information is pulled from the the request body.
         const newUser = await User.create({
             username: req.body.username,
             email: req.body.email,
-            password: req.body.password
+            password: hashedPassword
         });
          // if successful, send back a 201 status code and a success messge.
-        req.statusCode(201).send('User created successfully!');
+        res.statusCode(201).send('User created successfully!');
+
     } catch (error) {
-        // If there's an error during the user creation, log the error and send a back a 400 status code with an error message
-        console.error("Error creating user:", error);
-        res.status(400).send('Error creating user');
+      
+        // Check to see if the error is a unique constraint error (e.g., duplicate username)
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({error: 'Username is already in use. Please try another.'});
+        }
+        // For other types of erros, send a generic error message
+        res.status(500).send('There was an error creating the user. Please try again.');
+    
     }
 });
 
@@ -76,7 +102,8 @@ app.post('/login', async (req, res) => {
         const match = await bcrypt.compare(req.body.password, user.password);
         // If passwords matc, return a 200 status code and a success message.
         if (match) {
-            res.status(200).send('Login successful!');
+            req.session.userId = user.id // store the user's id in the session
+            res.status(200).json({ message: 'Login successful!', userID: user.id });
         } else {
             // If passwrods don't match, return a 401 status code and an error message.
             res.status(401).send('incorrect password, access denied');
@@ -89,25 +116,20 @@ app.post('/login', async (req, res) => {
 });
 
 // Post endpoint for submitting a score.
-app.post('/submit-score', async (req, res) => {
+app.post('/submit-score', isAuthenticated, async (req, res) => {
     try {
         // Destructure score details from requested body.
         const { score, category, difficulty, UserID } = req.body;
 
-        // Attempt to find the user by their primary key (UserID).
-
-        const user = await User.findByPk(userID);
-        // If no user is found, return a 404 status code and a 'not found message'.
-        if(!user) {
-            return res.status(404).send('User not found');
-        }
+        // Use the user ID from the session
+        const userId = req.session.userId;
 
         // Create a new score entry using the Score model
         const newScore = await Score.create({
             points: score,
             category: category,
             difficulty: difficulty,
-            UserID: user.id
+            UserID: userid
         });
         // If successful, return a 201 status code and the new score object.
         res.status(201).json(newScore);
@@ -117,6 +139,12 @@ app.post('/submit-score', async (req, res) => {
         res.status(500).send('Error submitting score');
     }
 });
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(); // Destroy the user's session
+    res.send('Logged out Successfully');
+})
+
 
 // Static files middleware (for CSS, JS, Images, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
