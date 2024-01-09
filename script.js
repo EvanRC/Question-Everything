@@ -207,5 +207,30 @@
         return decodedString;
     }
 
+    //Function to send the players's score to the server.
+    function sendScoreToServer(score, category, difficulty) {
+        // Make a POST request to the server's '/submit-score' endpoint.
+        fetch('/submit-score', {
+            method: 'POST', // Specifies the HTTP method, POST, for sending data to the server.
+            headers: {
+                // Include header to indcate the type of content being sent (JSON)
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                // Convert the score data into a JSON string to send as the request body.
+                score: score, // Include the score from the function's argument.
+                category: category, // Include the category from the function's argument.
+                difficulty: difficulty, // Include the difficulty from the functions argument.
+                // userID: 
+            }),
+        })
+        .then(response => response.json()) // Convert response into JSON 
+        .then(data => console.log('Score submitted!:', data)) // Log success message and the response data.
+        .catch(error => {
+            // Catch and log any errors that occur during the fetch request
+         console.error('Thee was an error submitting the score:', error)
+        });
+    }
+
     // Other functions or setup can go here
 
