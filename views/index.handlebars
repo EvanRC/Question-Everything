@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <script id="timer-template" type="text/x-handlebars-template">
+            Time left: {{timeLeft}} seconds
+    </script>
+    <div id="timerDisplay"></div>
+    <div class="container">
+        <label for="dropdown">Select Category:</label>
+        <select id="categoryDropdown">
+            <option value="" selected disabled>Select a Category</option>
+            <option value="api1">General Knowledge</option>
+            <option value="api2">Sports</option>
+            <option value="api3">History</option>
+            <option value="api4">Animals</option>
+            <option value="api5">Video Games</option>
+            <option value="api6">Celebrities</option>
+        </select>
+        <label for="dropdown">Select Difficulty</label>
+        <select id="difficultyDropdown">
+            <option value="" selected disabled>Select Difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        
+        <button onclick="searchQuestions()">Search</button>
+        <div id="questionList2"></div>
+    </div>
+    <div class="container">
+        
+        {{> quizTemplate}}
+    </div>
+    <div class="container">
+        <button id="backButton" onclick="scrollQuestions(-1)">Back</button>
+        <button id="forwardButton" onclick="scrollQuestions(1)">Forward</button>
+    </div>
+
+</body>
+</html>

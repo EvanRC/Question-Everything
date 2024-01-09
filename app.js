@@ -2,34 +2,19 @@
 const express = require('express');
 const http =  require('http');
 const path = require('path');
-
-// Enviroment variables 
+const session = require('express-session');
+const { engine } = require('express-handlebars');
+const socketIO = require('socket.io');
 require('dotenv').config();
-
-// Require bcrypt
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-
-// Session and authentication 
-const session = require('express-session');
-
-// Database and ORM
 const sequelizeInstance = require('./database.js');
 const User = require('./models/user.js');
 const Score = require('./models/score.js');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
-// Template Engine
-const { engine } = require('express-handlebars');
-
-// Real-time communication
-const socketIO = require('socket.io');
-
-// Initialize Express app and HTTP server 
 const app = express();
 const server = http.createServer(app);
-
-// Initialize Socket.IO
 const io = socketIO(server);
 
 // Session configuration
@@ -41,25 +26,24 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: 'auto', // Set to 'auto' for Heroku deployment to handle both HTTP and HTTPS
-        httpOnly: true, // Prevents client side Javascript from accessing the cookie
-        maxAge: 24 * 60 * 60 * 1000 // Sets cookie expiraation to 1 day
+        secure: 'auto',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
-
-//Define the isAuthenticated middleware
-function isAuthenticated(req, res, next) {
-    if (req.session.userId) {
-        next(); // If a user is logged in (session exists), proceed to the next middleware/route handeler
-    } else {
-        res.status(401).send('Login required'); // If no user is logged in, send an error response.
-    }
-}
-
 
 // Body Parser Middleware to handle JSON and URL encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Define the isAuthenticated middleware
+function isAuthenticated(req, res, next) {
+    if (req.session.userId) {
+        next();
+    } else {
+        res.status(401).send('Login required');
+    }
+}
 
 // Post endpoint for registering a new User.
 app.post('/register', async (req, res) => { 
@@ -74,7 +58,7 @@ app.post('/register', async (req, res) => {
             password: hashedPassword
         });
          // if successful, send back a 201 status code and a success messge.
-        res.statusCode(201).send('User created successfully!');
+        res.status(201).send('User created successfully!');
 
     } catch (error) {
       
@@ -88,7 +72,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// post endpoint for user login.
+// Post endpoint for user login.
 app.post('/login', async (req, res) => {
     try { 
         // Attempt to find the user by username.
@@ -145,15 +129,15 @@ app.post('/logout', (req, res) => {
     res.send('Logged out Successfully');
 })
 
-
-// Static files middleware (for CSS, JS, Images, etc.)
+// Static files middleware
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Handlebars Middleware 
+// Handlebars Middleware
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
-// Define routes 
+// Define routes
 app.get('/', (req, res) => {
     res.render('home', { title: 'Get ready to Question Everything!'});
 });
@@ -163,7 +147,7 @@ io.on('connection', (socket) => {
     console.log('New client connected');
 
     socket.on('disconnect', () => {
-        console.log(' Client disconnected');
+        console.log('Client disconnected');
     });
 });
 
