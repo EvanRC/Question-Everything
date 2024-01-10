@@ -19,6 +19,7 @@
     
     const app = express();
     const port = 3000;
+    const socket = io(); // connects to socket.IO server
 
     app.engine('handlebars', exphbs());
     app.set('view engine', 'handlebars');
@@ -26,6 +27,7 @@
 
     // Register Handlebars partials directory
     exphbs.registerPartials(path.join(__dirname, 'views', 'partials'));
+
 
     // Define a route to render the quiz page
     app.get('/quiz', (req, res) => {
@@ -231,6 +233,32 @@
         decodedString = decodedString.replace(/&rdquo;/g, '"');
 
         return decodedString;
+    }
+
+    // Socket.IO client side implementation 
+    function sendBoadcast(message) {
+        socket.emit('broadcast message', message);
+    }
+
+    socket.on('recieveBroadcast', (message) => {
+        console.log('Broadcast recieved:', message);
+    })
+
+    function handleAnswerClick(selectedAnswer) {
+        const currentQuestion = data.results[currentQuestionIndex];
+        const correctAnswer = currentQuestion.correct_answer;
+        
+        // Send the selected answer and the correct answer to the server
+        socket.emit('submitAnswer', {
+            userId: userId,
+            questionId: currentQuestionIndex,
+            selectedAnswer: selectedAnswer,
+            correctAnswer: correctAnswer
+        });
+        
+        // Move to the next question
+        scrollQuestions(1);
+
     }
 
     //Function to send the players's score to the server.
