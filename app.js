@@ -112,7 +112,7 @@ io.on('connection', (socket) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// isAuthenticated middleware
+// is Authenticated middleware
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
         next();
@@ -217,15 +217,6 @@ app.set('views', path.join(__dirname, 'views'))
 // Home route
 app.get('/', (req, res) => {
     res.render('home', { title: 'Get ready to Question Everything!' });
-});
-
-// Socket.IO connection
-io.on('connection', (socket) => {
-    console.log('New client connected');
-
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
-    });
 });
 
 // Start the server
