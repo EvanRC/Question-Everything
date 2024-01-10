@@ -1,6 +1,6 @@
 // Core dependencies
 const express = require('express');
-const http =  require('http');
+const http = require('http');
 const path = require('path');
 const session = require('express-session');
 const { engine } = require('express-handlebars');
@@ -32,6 +32,82 @@ app.use(session({
     }
 }));
 
+let gameState = {
+    cuurentQuestion: null,
+    scores: {userId, value:score},
+    timer: null
+};
+
+function updateGameState(newState) {
+    gameState = { ...gameState, ...newState };
+    io.emit('gameStateUpdate', gameState);
+}
+
+
+async function checkAnswer(userId, questionId, selectedAnswer, correctAnswer) {
+    // Checks to see if the user's answer is correct
+    const isCorrect = selectedAnswer === correctAnswer;
+
+    let newScoreValue = 0; // Initialize newScore variable
+
+    if (isCorrect) {
+        // Find the user's current score in the database 
+        const userScore = await Score.findOne({ where: { UserId: userId } });
+
+        if (userScore) {
+            // If a score record exists, increment it
+            newScoreValue = userScore.points + 1; // Increment by 1 
+            await userScore.update({ points: newScoreValue })
+        } else {
+            // If no score record exists, create a new one 
+            await Score.create({
+                UserId: userId,
+                points: 1, // Starting with 1 point for the first correct answer 
+            });
+            newScoreValue = 1; // Starting score 
+        }
+    }
+
+    // Return whether the answer was correct and the new score
+    return { isCorrect: isCorrect, newScore: newScoreValue };
+}
+
+// Socket.IO connection handler
+io.on('connection', (socket) => {
+    console.log('New client connected');
+
+    socket.on('broadcastMessage', (message) => {
+        io.emit('recieveBroadcast', message); // Broadcasting to all clients
+    });
+
+    socket.on('submitAnswer', async (data) => {
+        try {
+            console.log('Answer recieved:', data);
+
+            // Validate the answer and update the score
+            const result = checkAnswer(data.userId, data.questionId, data.selectedAnswer, data.correctAnswer);
+
+            // Send feedback to the user
+            socket.emit('answerResult', {
+                correct: result.isCorrect,
+                newScore: result.newScore,
+                questionId: data.questionId
+            });
+
+        } catch (error) {
+            console.error('Error processing answer:', error);
+
+            // For example, you can emit an error message to user 
+            socket.emit('error', 'An error occured processing your answer.');
+        }
+
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+});
+
 // Body Parser Middleware to handle JSON and URL encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -46,7 +122,7 @@ function isAuthenticated(req, res, next) {
 }
 
 // Post endpoint for registering a new User.
-app.post('/register', async (req, res) => { 
+app.post('/register', async (req, res) => {
     try {
         // Hash the user's password
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
@@ -57,26 +133,26 @@ app.post('/register', async (req, res) => {
             email: req.body.email,
             password: hashedPassword
         });
-         // if successful, send back a 201 status code and a success messge.
+        // if successful, send back a 201 status code and a success messge.
         res.status(201).send('User created successfully!');
 
     } catch (error) {
-      
+
         // Check to see if the error is a unique constraint error (e.g., duplicate username)
         if (error.name === 'SequelizeUniqueConstraintError') {
-            return res.status(400).json({error: 'Username is already in use. Please try another.'});
+            return res.status(400).json({ error: 'Username is already in use. Please try another.' });
         }
         // For other types of erros, send a generic error message
         res.status(500).send('There was an error creating the user. Please try again.');
-    
+
     }
 });
 
 // Post endpoint for user login.
 app.post('/login', async (req, res) => {
-    try { 
+    try {
         // Attempt to find the user by username.
-        const user = await User.findOne({where: { username: req.body.username} });
+        const user = await User.findOne({ where: { username: req.body.username } });
         // If no user is found, return a 401 status code and a 'not found' message.
         if (!user) {
             return res.status(401).send('User not found');
@@ -139,7 +215,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Define routes
 app.get('/', (req, res) => {
-    res.render('home', { title: 'Get ready to Question Everything!'});
+    res.render('home', { title: 'Get ready to Question Everything!' });
 });
 
 // Socket.IO connection
