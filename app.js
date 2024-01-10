@@ -3,7 +3,7 @@ const express = require('express');
 const http =  require('http');
 const path = require('path');
 const session = require('express-session');
-const { engine } = require('express-handlebars');
+const { engine } = require('express-handlebars');;
 const socketIO = require('socket.io');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -136,7 +136,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Handlebars Middleware
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'views'))
 
 // Home route
 app.get('/', (req, res) => {

@@ -10,21 +10,6 @@
 <body>
     {{{body}}}
 
-    <script id="question-template" type="text/x-handlebars-template">
-        <div class="question">
-            <p>{{question}}</p>
-            <ul>
-                {{#each shuffled_answers}}
-                    <li>{{this}}</li>
-                {{/each}}
-            </ul>
-        </div>
-    </script>
-
-    <script id="timer-template" type="text/x-handlebars-template">
-        Time left: {{timeLeft}} seconds
-    </script>
-
     <script src="script.js"></script> 
 </body>
 </html>

@@ -23,9 +23,27 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+let template = ({question, shuffled_answers}) => `
+<div id="question-template">
+    <div class="question">
+        <p>${question}</p>
+        <ul>
+            ${shuffled_answers.map(answer => `<li><button data-answer="${answer}">${answer}</button></li>`).join('')}
+        </ul>
+    </div>
+</div>
+`
+
+let timerTemplate = (timeLeft) => `
+<div id="timerDisplay">
+    Time left: ${timeLeft} seconds
+</div>
+`
+
 let currentQuestionIndex = 0;
 let questionListContainer;
 let data;
+let score = 0;
 let gameOver = false;
 
 function searchQuestions() {
@@ -67,9 +85,6 @@ function searchQuestions() {
 }
 
 function renderQuestion(index, data) {
-    const source = document.getElementById('question-template').innerHTML;
-    const template = Handlebars.compile(source);
-
     const question = data.results[index];
     question.question = decodeEntities(question.question);
     question.correct_answer = decodeEntities(question.correct_answer);
@@ -95,50 +110,36 @@ function shuffleArray(array) {
 }
 
 let timer;
-    let remainingTime;
+let remainingTime;
 
-    function startTimer() {
-        if (gameOver) {
-            return;
-        }
-    
-        clearInterval(timer);
-    
-        const timeLimitInSeconds = 10;
-    
-        remainingTime = timeLimitInSeconds;
-    
+function startTimer() {
+    if (gameOver) {
+        return;
+    }
+
+    clearInterval(timer);
+
+    const timeLimitInSeconds = 10;
+    remainingTime = timeLimitInSeconds;
+    updateTimerDisplay();
+
+    timer = setInterval(() => {
+        remainingTime--;
+        console.log("Decrementing Time: ", remainingTime);
         updateTimerDisplay();
-    
-        timer = setInterval(() => {
-            remainingTime--;
-            console.log("Decrementing Time: ", remainingTime);  // Check the decrementing process
-            updateTimerDisplay()
-    
-            if (remainingTime <= 0) {
-                scrollQuestions(1);
-            }
-        }, 1000);
-    }
 
-    function updateTimerDisplay() {
-        const timerTemplateScript = document.getElementById('timer-template').innerHTML;
-        const timerTemplate = Handlebars.compile(timerTemplateScript);
-    
-        const timerData = { timeLeft: remainingTime };
-        console.log("Remaining Time: ", remainingTime);  // Check the value of remainingTime
-        const timerHtml = timerTemplate(timerData);
-        console.log("Timer HTML: ", timerHtml);  // Add this line for debugging
-    
-        const timerDisplayElement = document.getElementById('timerDisplay');
-        if (timerDisplayElement) {
-            timerDisplayElement.innerHTML = timerHtml;
+        if (remainingTime <= 0) {
+            scrollQuestions(1);
         }
-    }
+    }, 1000);
+}
 
-    const timerData = {
-        timeLeft: remainingTime
-    };
+function updateTimerDisplay() {
+    const timerElement = document.getElementById('timerDisplay');
+    if (timerElement) {
+        timerElement.textContent = 'Time Remaining: ' + remainingTime + ' seconds';
+    }
+}
 
 function resetTimer() {
         clearTimeout(timer);
@@ -178,10 +179,8 @@ function stopTimer() {
 }
 
 function handleAnswerClick(selectedAnswer) {
-    // Check the selected answer and update the score
-    checkAnswer(selectedAnswer);
-    // Move to the next question
-    scrollQuestions(1);
+    checkAnswer(selectedAnswer); // This will update the score
+    scrollQuestions(1); // Move to the next question
 }
 
 
@@ -190,10 +189,19 @@ function checkAnswer(selectedAnswer) {
     const correctAnswer = currentQuestion.correct_answer;
 
     if (selectedAnswer === correctAnswer) {
-        score++;
+        score++; // Increment score if the answer is correct
         console.log('Correct! Current Score:', score);
     } else {
         console.log('Incorrect. Current Score:', score);
+    }
+
+    updateScoreDisplay(); // Update the score display after each question
+}
+
+function updateScoreDisplay() {
+    const scoreElement = document.getElementById('scoreDisplay');
+    if (scoreElement) {
+        scoreElement.textContent = 'Score: ' + score;
     }
 }
 
@@ -239,23 +247,4 @@ function sendScoreToServer(score, category, difficulty) {
     });
 }
 
-function updateTimerDisplay() {
-    const timerTemplateScript = document.getElementById('timer-template').innerHTML;
-    const timerTemplate = Handlebars.compile(timerTemplateScript);
 
-    const timerHtml = timerTemplate({ simpleTime: '10' }); // Hardcoded data
-    document.getElementById('timerDisplay').innerHTML = timerHtml;
-}
-
-function renderQuestion() {
-    const questionTemplateScript = document.getElementById('question-template').innerHTML;
-    const questionTemplate = Handlebars.compile(questionTemplateScript);
-
-    const questionHtml = questionTemplate({ simpleQuestion: 'What is 2+2?' }); // Hardcoded data
-    document.getElementById('questionList2').innerHTML = questionHtml;
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    updateTimerDisplay();
-    renderQuestion();
-});
