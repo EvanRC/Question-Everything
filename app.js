@@ -3,7 +3,7 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const session = require('express-session');
-const { engine } = require('express-handlebars');
+const { engine } = require('express-handlebars');;
 const socketIO = require('socket.io');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -112,7 +112,7 @@ io.on('connection', (socket) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Define the isAuthenticated middleware
+// isAuthenticated middleware
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
         next();
@@ -175,7 +175,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Post endpoint for submitting a score.
+// Submit-score endpoint
 app.post('/submit-score', isAuthenticated, async (req, res) => {
     try {
         // Destructure score details from requested body.
@@ -200,6 +200,7 @@ app.post('/submit-score', isAuthenticated, async (req, res) => {
     }
 });
 
+// Logout endpoint
 app.post('/logout', (req, res) => {
     req.session.destroy(); // Destroy the user's session
     res.send('Logged out Successfully');
@@ -211,9 +212,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Handlebars Middleware
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'views'))
 
-// Define routes
+// Home route
 app.get('/', (req, res) => {
     res.render('home', { title: 'Get ready to Question Everything!' });
 });
