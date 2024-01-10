@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+    <link rel="stylesheet" href="style.css"> 
+    <title>{{title}}</title>
+</head>
+<body>
+    {{{body}}}
+
+    <script id="question-template" type="text/x-handlebars-template">
+        <div class="question">
+            <p>{{question}}</p>
+            <ul>
+                {{#each shuffled_answers}}
+                    <li>{{this}}</li>
+                {{/each}}
+            </ul>
+        </div>
+    </script>
+
+    <script id="timer-template" type="text/x-handlebars-template">
+        Time left: {{timeLeft}} seconds
+    </script>
+
+    <script src="script.js"></script> 
+</body>
+</html>

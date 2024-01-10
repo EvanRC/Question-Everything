@@ -36,7 +36,7 @@ app.use(session({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Define the isAuthenticated middleware
+// isAuthenticated middleware
 function isAuthenticated(req, res, next) {
     if (req.session.userId) {
         next();
@@ -45,7 +45,7 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-// Post endpoint for registering a new User.
+// Registration endpoint
 app.post('/register', async (req, res) => { 
     try {
         // Hash the user's password
@@ -99,7 +99,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Post endpoint for submitting a score.
+// Submit-score endpoint
 app.post('/submit-score', isAuthenticated, async (req, res) => {
     try {
         // Destructure score details from requested body.
@@ -124,6 +124,7 @@ app.post('/submit-score', isAuthenticated, async (req, res) => {
     }
 });
 
+// Logout endpoint
 app.post('/logout', (req, res) => {
     req.session.destroy(); // Destroy the user's session
     res.send('Logged out Successfully');
@@ -137,9 +138,14 @@ app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-// Define routes
+// Home route
 app.get('/', (req, res) => {
     res.render('home', { title: 'Get ready to Question Everything!'});
+});
+
+// Quiz route
+app.get('/quiz', (req, res) => {
+    res.render('quiz', { quizData });
 });
 
 // Socket.IO connection
