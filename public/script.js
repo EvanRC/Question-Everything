@@ -8,6 +8,7 @@ const categoryMapping = {
     api6: 26, // Celebrities
 };
 
+
 const socket = io();
 let selectedCategory;
 let selectedDifficulty;
@@ -50,7 +51,6 @@ let data;
 let score = 0;
 let gameOver = false;
 
-socket = io()
 
 function startGame() {
     // Reset game state 
@@ -286,6 +286,7 @@ function handleAnswerClick(selectedAnswer) {
     scrollQuestions(1);
 
 }
+
 
 
 

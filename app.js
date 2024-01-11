@@ -40,6 +40,10 @@ app.use(session({
     }
 }));
 
+// Body Parser Middleware to handle JSON and URL encoded data
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 async function startApp() {
     try {
         // Synchronize all models with the database
@@ -152,9 +156,7 @@ io.on('connection', (socket) => {
 });
 
 
-// Body Parser Middleware to handle JSON and URL encoded data
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
 
 // is Authenticated middleware
 function isAuthenticated(req, res, next) {
