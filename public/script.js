@@ -50,6 +50,8 @@ let data;
 let score = 0;
 let gameOver = false;
 
+socket = io()
+
 function startGame() {
     // Reset game state 
     currentQuestionIndex = 0;
