@@ -10,8 +10,6 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-}
-
 /* Header Styles */
 .header {
     width: 100%;
@@ -29,7 +27,6 @@ body {
     font-size: 2em;
 }
 
-/* Style for containers */
 .container {
     width: 90%;
     max-width: 600px;
@@ -40,15 +37,13 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 255, 255, 0.6); /* Glowing effect */
 }
-
 /* Label and Select Dropdown Styles */
 label {
     color: #32CD32; /* Neon green color */
     display: block;
     margin: 10px 0;
 }
-
-select {
+.select {
     width: 100%;
     padding: 5px;
     background-color: #343A40;
@@ -57,9 +52,8 @@ select {
     border-radius: 5px;
     margin-bottom: 15px;
 }
-
 /* Button Styles */
-button {
+.button {
     padding: 10px;
     background-color: #32CD32; /* Neon green background */
     color: white;
@@ -70,11 +64,13 @@ button {
     transition: background-color 0.2s ease-in-out;
     width: 100%;
 }
-
-button:hover {
+.button:hover {
     background-color: #28A745; /* Different shade on hover */
 }
 
+.button:hover {
+    background-color: #28A745; /* Different shade on hover */
+}
 /* Timer, Question, and Score Display Styles */
 #timerDisplay, #questionList2, #scoreDisplay {
     color: #00FFFF; /* Neon blue text */
@@ -86,4 +82,4 @@ button:hover {
     .container {
         width: 95%;
     }
-}
+

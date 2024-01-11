@@ -18,7 +18,7 @@ const User = sequelize.define('user', {
     // 'allowNull: false' makes this a required field.
     password: {
         type: Sequelize.STRING,
-        allowNULL: false,
+        allowNull: false,
     },
     // Define an 'email' column with type STRING.
     // 'allowNull: false' means this field is required.
@@ -56,5 +56,5 @@ User.beforeUpdate((user, options) => {
     }
 });
 
-// exports the User model for use in othe parts of the application
+// exports the User model for use in other parts of the application
 module.exports = User;
