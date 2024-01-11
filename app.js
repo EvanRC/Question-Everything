@@ -194,28 +194,33 @@ app.post('/register', async (req, res) => {
 
 // Post endpoint for user login.
 app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
     try {
-        // Attempt to find the user by username.
-        const user = await User.findOne({ where: { username: req.body.username } });
-        // If no user is found, return a 401 status code and a 'not found' message.
+        const user = await User.findOne({ where: { username } });
+
+        // Logging statements for debugging
+        console.log('Fetched user from database:', user);
+        console.log('Plaintext password from request:', password);
+        console.log('Hashed password from database:', user.password);
+
         if (!user) {
-            return res.status(401).send('User not found');
+            return res.status(401).json({ message: 'Invalid username or password' });
         }
 
-        // Compare the request password with the user's stored hashed password.
-        const match = await bcrypt.compare(req.body.password, user.password);
-        // If passwords matc, return a 200 status code and a success message.
-        if (match) {
-            req.session.userId = user.id // store the user's id in the session
-            res.status(200).json({ message: 'Login successful!', userID: user.id });
-        } else {
-            // If passwrods don't match, return a 401 status code and an error message.
-            res.status(401).send('incorrect password, access denied');
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        // Logging statement for debugging
+        console.log('Password comparison result:', isMatch);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid username or password' });
         }
-    } catch (error) {
-        // IF there's an error during the login process, log the error and send back a 500 status code with an error message.
-        console.error("Error logging in:", error);
-        res.status(500).send('Error logging in');
+
+        // ... rest of the login logic (session management, etc.)
+    } catch (err) {
+        console.error('Error during login:', err);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
