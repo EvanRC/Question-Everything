@@ -50,8 +50,6 @@ let data;
 let score = 0;
 let gameOver = false;
 
-socket = io()
-
 function startGame() {
     // Reset game state 
     currentQuestionIndex = 0;
@@ -313,4 +311,22 @@ function sendScoreToServer(score, category, difficulty) {
         });
 }
 
+const logOutBtn = document.getElementById('logOutBtn');
 
+logOutBtn.addEventListener('click', () => {
+  fetch('/logout', {
+    method: 'POST'
+  })
+  .then(response => {
+    if (response.ok) {
+      // Handle successful logout (e.g., redirect or display a message)
+      window.location.href = '/'; // Redirect to the home page as an example
+    } else {
+      // Handle logout error (e.g., display an error message)
+      console.error('Logout failed:', response.statusText);
+    }
+  })
+  .catch(error => {
+    console.error('Logout error:', error);
+  });
+});
