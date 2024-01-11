@@ -1,30 +1,65 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: ‘Press Start 2P’, cursive;
+    background-color: #000; /* Dark background */
+    color: #32CD32; /* Neon green text */
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    height: 100vh;
-    background-color: #f4f4f4;
+    justify-content: center;
+    min-height: 100vh;
 }
-
+/* Style for containers */
 .container {
-    text-align: center;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+    padding: 15px;
+    margin: 10px auto;
+    background-color: #212529; /* Dark background for container */
+    border: 2px solid #00FFFF; /* Neon blue border */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 255, 255, 0.6); /* Glowing effect */
 }
-
+/* Label and Select Dropdown Styles */
 label {
-    margin-right: 10px;
+    color: #32CD32; /* Neon green color */
+    display: block;
+    margin: 10px 0;
 }
-
 select {
-    padding: 8px;
+    width: 100%;
+    padding: 5px;
+    background-color: #343A40;
+    color: #00FFFF; /* Neon blue text */
+    border: 1px solid #32CD32; /* Neon green border */
+    border-radius: 5px;
+    margin-bottom: 15px;
 }
-
-#questionList {
-    margin-top: 20px;
+/* Button Styles */
+button {
+    padding: 10px;
+    background-color: #32CD32; /* Neon green background */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease-in-out;
+    width: 100%;
+}
+button:hover {
+    background-color: #28A745; /* Different shade on hover */
+}
+/* Timer, Question, and Score Display Styles */
+#timerDisplay, #questionList2, #scoreDisplay {
+    color: #00FFFF; /* Neon blue text */
+    margin: 10px 0;
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
 }

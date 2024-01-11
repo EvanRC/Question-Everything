@@ -12,10 +12,17 @@ const sequelizeInstance = require('./database.js');
 const User = require('./models/user.js');
 const Score = require('./models/score.js');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+
+let currentQuestionData = {};
+
+let gameState = {
+    isActive: false,
+    currentQuestionIndex: 0,
+    scores: {}
+};
 
 // Session configuration
 app.use(session({
@@ -31,17 +38,6 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000
     }
 }));
-
-let gameState = {
-    cuurentQuestion: null,
-    scores: {userId, value:score},
-    timer: null
-};
-
-function updateGameState(newState) {
-    gameState = { ...gameState, ...newState };
-    io.emit('gameStateUpdate', gameState);
-}
 
 
 async function checkAnswer(userId, questionId, selectedAnswer, correctAnswer) {
@@ -80,6 +76,20 @@ io.on('connection', (socket) => {
         io.emit('recieveBroadcast', message); // Broadcasting to all clients
     });
 
+    socket.on('startGame', (data) => {
+
+        // Initialize or reset game state
+        gameState = {
+            isActive: true,
+            currentQuestionIndex: 0,
+            selectedCategory: data.category,
+            difficultyLevel: data.diffficulty,
+            scores: {}
+        };
+        // Notify all clients about the game starting
+        io.emit('gameStarted', { gameState });
+    })
+
     socket.on('submitAnswer', async (data) => {
         try {
             console.log('Answer recieved:', data);
@@ -88,6 +98,23 @@ io.on('connection', (socket) => {
             const result = checkAnswer(data.userId, data.questionId, data.selectedAnswer, data.correctAnswer);
 
             // Send feedback to the user
+            socket.emit('answerResult', {
+                correct: result.isCorrect,
+                newScore: result.newScore,
+                questionId: data.questionId
+            });
+
+            // Update the game state
+            gameState.scores[data.userId] = result.newScore;
+
+            // Determine if it's the last question
+            if (gameState.currentQuestionIndex >= 11 - 1) {
+                io.emit('gameEnd', { finalScores: gameState.scores });
+                gameState.isActive = false; // Reset game state if needed
+           
+            }
+
+            // Emit the result to the client 
             socket.emit('answerResult', {
                 correct: result.isCorrect,
                 newScore: result.newScore,
@@ -107,6 +134,7 @@ io.on('connection', (socket) => {
         console.log('Client disconnected');
     });
 });
+
 
 // Body Parser Middleware to handle JSON and URL encoded data
 app.use(express.json());
