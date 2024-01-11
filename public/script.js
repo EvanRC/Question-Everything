@@ -8,6 +8,10 @@ const categoryMapping = {
     api6: 26, // Celebrities
 };
 
+const socket = io();
+let selectedCategory;
+let selectedDifficulty;
+
 document.addEventListener('DOMContentLoaded', function () {
     questionListContainer = document.getElementById('questionList2');
 
@@ -65,10 +69,10 @@ function startGame() {
     function searchQuestions() {
         const timerDisplay = document.getElementById('timerDisplay')
         const categoryDropdown = document.getElementById('categoryDropdown');
-        const selectedCategory = categoryMapping[categoryDropdown.value];
+        selectedCategory = categoryMapping[categoryDropdown.value];
 
         const difficultyDropdown = document.getElementById('difficultyDropdown');
-        const selectedDifficulty = difficultyDropdown.value;
+              selectedDifficulty = difficultyDropdown.value;
 
         if (!selectedCategory || !selectedDifficulty) {
             alert('Please select both category and difficulty.');
@@ -105,9 +109,9 @@ function startGame() {
 document.getElementById('startGameButton').addEventListener('click', startGame);
 
 
-// When a user selects a difficulty and starts the game
-const selectedDifficulty = document.getElementById('difficultyDropdown')
-socket.emit('startGame', { difficulty: selectedDifficulty });
+// // When a user selects a difficulty and starts the game
+// const selectedDifficulty = document.getElementById('difficultyDropdown')
+// socket.emit('startGame', { difficulty: selectedDifficulty });
 
 function renderQuestion(index, data) {
     const question = data.results[index];
@@ -124,9 +128,9 @@ function renderQuestion(index, data) {
     const html = template(question);
     questionListContainer.innerHTML = html;
 
-    // Send the current wuestion to the server
-    const currentQuestionDara = data.results[index];
-    socket.emit('updateCurrentQuestion', currenQuestionData);
+    // Send the current Question to the server
+    const currentQuestionData = data.results[index];
+    socket.emit('updateCurrentQuestion', currentQuestionData);
 
     startTimer();
 
@@ -150,7 +154,7 @@ function startTimer() {
 
     clearInterval(timer);
 
-    const timeLimitInSeconds = 20;
+    const timeLimitInSeconds = 10;
     remainingTime = timeLimitInSeconds;
     updateTimerDisplay();
 
@@ -162,7 +166,7 @@ function startTimer() {
         if (remainingTime <= 0) {
             scrollQuestions(1);
         }
-    }, 2000);
+    }, 1000);
 }
 
 function updateTimerDisplay() {
@@ -257,11 +261,12 @@ function decodeEntities(encodedString) {
 // Socket.IO client side implementation 
 function sendBoadcast(message) {
     socket.emit('broadcast message', message);
-}
+
 
 socket.on('recieveBroadcast', (message) => {
     console.log('Broadcast recieved:', message);
 })
+}
 
 function handleAnswerClick(selectedAnswer) {
     const currentQuestion = data.results[currentQuestionIndex];
