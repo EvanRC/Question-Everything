@@ -212,12 +212,6 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
-        // TODO: Set up user session here, if you're using session-based authentication
-
-        // Respond with success or redirect as needed
-        res.json({ message: 'Login successful', userID: user.id });
-        // For redirect: res.redirect('/some-secured-page');
-
     } catch (err) {
         console.error('Error during login:', err);
         res.status(500).json({ message: 'Internal server error' });
@@ -266,23 +260,4 @@ app.set('views', path.join(__dirname, 'views'))
 // Home route
 app.get('/', (req, res) => {
     res.render('home', { title: 'Get ready to Question Everything!' });
-});
-
-// // Start the server
-// const PORT = process.env.PORT || 3000;
-// server.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
-
-const password = 'testtest'; // The plaintext password
-const hashedPassword = '$2b$10$MI2kfJR20O2Uy0q7N/0psunct46DylBZ7upwjU9Ehl8F4QuVhHbpu'; // The stored hashed password
-
-bcrypt.compare(password, hashedPassword, (err, isMatch) => {
-    if (err) {
-        console.error('Comparison error:', err);
-    } else if (isMatch) {
-        console.log('Password matches!');
-    } else {
-        console.log('Password does not match.');
-    }
 });
