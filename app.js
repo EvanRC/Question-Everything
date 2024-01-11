@@ -196,28 +196,28 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
+    }
+
     try {
         const user = await User.findOne({ where: { username } });
-
-        // Logging statements for debugging
-        console.log('Fetched user from database:', user);
-        console.log('Plaintext password from request:', password);
-        console.log('Hashed password from database:', user.password);
-
         if (!user) {
+            // It's a good security practice not to reveal which part (username or password) was incorrect.
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-
-        // Logging statement for debugging
-        console.log('Password comparison result:', isMatch);
-
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
-        // ... rest of the login logic (session management, etc.)
+        // TODO: Set up user session here, if you're using session-based authentication
+
+        // Respond with success or redirect as needed
+        res.json({ message: 'Login successful', userID: user.id });
+        // For redirect: res.redirect('/some-secured-page');
+
     } catch (err) {
         console.error('Error during login:', err);
         res.status(500).json({ message: 'Internal server error' });
@@ -273,3 +273,16 @@ app.get('/', (req, res) => {
 // server.listen(PORT, () => {
 //     console.log(`Server is running on port ${PORT}`);
 // });
+
+const password = 'testtest'; // The plaintext password
+const hashedPassword = '$2b$10$MI2kfJR20O2Uy0q7N/0psunct46DylBZ7upwjU9Ehl8F4QuVhHbpu'; // The stored hashed password
+
+bcrypt.compare(password, hashedPassword, (err, isMatch) => {
+    if (err) {
+        console.error('Comparison error:', err);
+    } else if (isMatch) {
+        console.log('Password matches!');
+    } else {
+        console.log('Password does not match.');
+    }
+});
