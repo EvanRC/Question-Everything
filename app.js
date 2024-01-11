@@ -15,6 +15,7 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+const PORT = process.env.PORT || 3000;
 
 let currentQuestionData = {};
 
@@ -39,6 +40,21 @@ app.use(session({
     }
 }));
 
+async function startApp() {
+    try {
+        // Synchronize all models with the database
+        await sequelizeInstance.sync();
+
+        // Start the server
+        server.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Unable to connect to the database:', error);
+    }
+}
+
+startApp()
 
 async function checkAnswer(userId, questionId, selectedAnswer, correctAnswer) {
     // Checks to see if the user's answer is correct
@@ -247,8 +263,8 @@ app.get('/', (req, res) => {
     res.render('home', { title: 'Get ready to Question Everything!' });
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// // Start the server
+// const PORT = process.env.PORT || 3000;
+// server.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
