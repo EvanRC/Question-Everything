@@ -46,6 +46,8 @@ let data;
 let score = 0;
 let gameOver = false;
 
+socket = io()
+
 function startGame() {
     // Reset game state 
     currentQuestionIndex = 0;
@@ -107,6 +109,7 @@ document.getElementById('startGameButton').addEventListener('click', startGame);
 
 // When a user selects a difficulty and starts the game
 const selectedDifficulty = document.getElementById('difficultyDropdown')
+
 socket.emit('startGame', { difficulty: selectedDifficulty });
 
 function renderQuestion(index, data) {
