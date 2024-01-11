@@ -13,17 +13,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (questionListContainer) {
         questionListContainer.addEventListener('click', function (event) {
-        const button = event.target;
-        if (button.tagName === 'BUTTON') {
-            const selectedAnswer = button.getAttribute('data-answer');
-            handleAnswerClick(selectedAnswer);
-            resetTimer();
+            const button = event.target;
+            if (button.tagName === 'BUTTON') {
+                const selectedAnswer = button.getAttribute('data-answer');
+                handleAnswerClick(selectedAnswer);
+                resetTimer();
             }
         });
     }
 });
 
-let template = ({question, shuffled_answers}) => `
+let template = ({ question, shuffled_answers }) => `
 <div id="question-template">
     <div class="question">
         <p>${question}</p>
@@ -46,43 +46,68 @@ let data;
 let score = 0;
 let gameOver = false;
 
-function searchQuestions() {
-    const timerDisplay = document.getElementById('timerDisplay')
-    const categoryDropdown = document.getElementById('categoryDropdown');
-    const selectedCategory = categoryMapping[categoryDropdown.value];
+function startGame() {
+    // Reset game state 
+    currentQuestionIndex = 0;
+    score = 0;
+    gameOver = false;
 
-    const difficultyDropdown = document.getElementById('difficultyDropdown');
-    const selectedDifficulty = difficultyDropdown.value;
+    // Fetch Questions
+    searchQuestions();
 
-    if (!selectedCategory || !selectedDifficulty) {
-        alert('Please select both category and difficulty.');
-        return;
+   // emit 'startGame' event to server
+   socket.emit('startGame', { 
+    category: selectedCategory,
+    difficulty: selectedDifficulty,
+   });
+}
+
+    function searchQuestions() {
+        const timerDisplay = document.getElementById('timerDisplay')
+        const categoryDropdown = document.getElementById('categoryDropdown');
+        const selectedCategory = categoryMapping[categoryDropdown.value];
+
+        const difficultyDropdown = document.getElementById('difficultyDropdown');
+        const selectedDifficulty = difficultyDropdown.value;
+
+        if (!selectedCategory || !selectedDifficulty) {
+            alert('Please select both category and difficulty.');
+            return;
+        }
+
+        const apiEndpoint = `https://opentdb.com/api.php?amount=10&category=${selectedCategory}&difficulty=${selectedDifficulty}`;
+
+        fetch(apiEndpoint)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(apiData => {
+                data = apiData;
+                console.log(data);
+
+                if (data.results && Array.isArray(data.results)) {
+                    questionListContainer.innerHTML = '';
+                    renderQuestion(currentQuestionIndex, data);
+                } else {
+                    console.error('Invalid data structure:', data);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+
+            
     }
 
-    const apiEndpoint = `https://opentdb.com/api.php?amount=10&category=${selectedCategory}&difficulty=${selectedDifficulty}`;
+document.getElementById('startGameButton').addEventListener('click', startGame);
 
-    fetch(apiEndpoint)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(apiData => {
-            data = apiData;
-            console.log(data);
 
-            if (data.results && Array.isArray(data.results)) {
-                questionListContainer.innerHTML = '';
-                renderQuestion(currentQuestionIndex, data);
-            } else {
-                console.error('Invalid data structure:', data);
-            }
-        })
-        .catch(error => {
-            console.error('Fetch error:', error);
-        });
-}
+// When a user selects a difficulty and starts the game
+const selectedDifficulty = document.getElementById('difficultyDropdown')
+socket.emit('startGame', { difficulty: selectedDifficulty });
 
 function renderQuestion(index, data) {
     const question = data.results[index];
@@ -99,7 +124,13 @@ function renderQuestion(index, data) {
     const html = template(question);
     questionListContainer.innerHTML = html;
 
+    // Send the current wuestion to the server
+    const currentQuestionDara = data.results[index];
+    socket.emit('updateCurrentQuestion', currenQuestionData);
+
     startTimer();
+
+
 }
 
 function shuffleArray(array) {
@@ -119,7 +150,7 @@ function startTimer() {
 
     clearInterval(timer);
 
-    const timeLimitInSeconds = 10;
+    const timeLimitInSeconds = 20;
     remainingTime = timeLimitInSeconds;
     updateTimerDisplay();
 
@@ -131,7 +162,7 @@ function startTimer() {
         if (remainingTime <= 0) {
             scrollQuestions(1);
         }
-    }, 1000);
+    }, 2000);
 }
 
 function updateTimerDisplay() {
@@ -142,40 +173,40 @@ function updateTimerDisplay() {
 }
 
 function resetTimer() {
-        clearTimeout(timer);
+    clearTimeout(timer);
 
-        startTimer();
-    }
+    startTimer();
+}
 
 function scrollQuestions(direction) {
-        if (gameOver || !data) {
-            console.error('Game Over or Data is not available.');
-            return;
-        }
-    
-        const totalQuestions = data.results.length;
-    
-        currentQuestionIndex += direction;
-    
-        if (currentQuestionIndex < 0 || currentQuestionIndex >= totalQuestions) {
-            stopTimer(); // Stop the timer when the game is over
-            displayGameOverMessage(); // Display Game Over message
-            return;
-        }
-    
-        renderQuestion(currentQuestionIndex, data);
-        startTimer();
+    if (gameOver || !data) {
+        console.error('Game Over or Data is not available.');
+        return;
     }
+
+    const totalQuestions = data.results.length;
+
+    currentQuestionIndex += direction;
+
+    if (currentQuestionIndex < 0 || currentQuestionIndex >= totalQuestions) {
+        stopTimer(); // Stop the timer when the game is over
+        displayGameOverMessage(); // Display Game Over message
+        return;
+    }
+
+    renderQuestion(currentQuestionIndex, data);
+    startTimer();
+}
 
 function displayGameOverMessage() {
-        if (!gameOver) {
-            gameOver = true;
-            alert('Game Over');
-        }
+    if (!gameOver) {
+        gameOver = true;
+        alert('Game Over');
     }
+}
 
 function stopTimer() {
-        clearInterval(timer);
+    clearInterval(timer);
 }
 
 function handleAnswerClick(selectedAnswer) {
@@ -220,34 +251,36 @@ function decodeEntities(encodedString) {
     decodedString = decodedString.replace(/&ldquo;/g, '"');
     decodedString = decodedString.replace(/&rdquo;/g, '"');
 
-        return decodedString;
-    }
+    return decodedString;
+}
 
-    // Socket.IO client side implementation 
-    function sendBoadcast(message) {
-        socket.emit('broadcast message', message);
-    }
+// Socket.IO client side implementation 
+function sendBoadcast(message) {
+    socket.emit('broadcast message', message);
+}
 
-    socket.on('recieveBroadcast', (message) => {
-        console.log('Broadcast recieved:', message);
-    })
+socket.on('recieveBroadcast', (message) => {
+    console.log('Broadcast recieved:', message);
+})
 
-    function handleAnswerClick(selectedAnswer) {
-        const currentQuestion = data.results[currentQuestionIndex];
-        const correctAnswer = currentQuestion.correct_answer;
-        
-        // Send the selected answer and the correct answer to the server
-        socket.emit('submitAnswer', {
-            userId: userId,
-            questionId: currentQuestionIndex,
-            selectedAnswer: selectedAnswer,
-            correctAnswer: correctAnswer
-        });
-        
-        // Move to the next question
-        scrollQuestions(1);
+function handleAnswerClick(selectedAnswer) {
+    const currentQuestion = data.results[currentQuestionIndex];
+    const correctAnswer = currentQuestion.correct_answer;
 
-    }
+    // Send the selected answer and the correct answer to the server
+    socket.emit('submitAnswer', {
+        userId: userId,
+        questionId: currentQuestionIndex,
+        selectedAnswer: selectedAnswer,
+        correctAnswer: correctAnswer
+    });
+
+    // Move to the next question
+    scrollQuestions(1);
+
+}
+
+
 
 function sendScoreToServer(score, category, difficulty) {
     // Make a POST request to the server's '/submit-score' endpoint.
@@ -265,12 +298,12 @@ function sendScoreToServer(score, category, difficulty) {
             // userID: 
         }),
     })
-    .then(response => response.json()) // Convert response into JSON 
-    .then(data => console.log('Score submitted!:', data)) // Log success message and the response data.
-    .catch(error => {
-        // Catch and log any errors that occur during the fetch request
-     console.error('Thee was an error submitting the score:', error)
-    });
+        .then(response => response.json()) // Convert response into JSON 
+        .then(data => console.log('Score submitted!:', data)) // Log success message and the response data.
+        .catch(error => {
+            // Catch and log any errors that occur during the fetch request
+            console.error('Thee was an error submitting the score:', error)
+        });
 }
 
 
