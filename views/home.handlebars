@@ -1,0 +1,90 @@
+<header class="header">
+    <h1>Question Everything</h1>
+</header>
+<div class="container">
+    <h2>Register</h2>
+    <form action="/register" method="POST">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username1" name="username" required>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password1" name="password" required>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<div class="container">
+    <h2>Login</h2>
+    <form action="/login" method="POST">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username2" name="username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password2" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<div class="container">
+    <h2>Create Room</h2>
+    <button type="submit">Create Room</button>
+</div>
+
+<div class="container">
+    <h2>Join Room</h2>
+    <input type="text" id="joinRoom" placeholder="Enter Room Code">
+    <button type="submit">Join Game</button>
+</div>
+
+<div class="container">
+    <label for="dropdown">Select Category:</label>
+    <select id="categoryDropdown">
+        <option value="" selected disabled>Select a Category</option>
+        <option value="api1">General Knowledge</option>
+        <option value="api2">Sports</option>
+        <option value="api3">History</option>
+        <option value="api4">Animals</option>
+        <option value="api5">Video Games</option>
+        <option value="api6">Celebrities</option>
+    </select>
+    <label for="dropdown">Select Difficulty</label>
+    <select id="difficultyDropdown">
+        <option value="" selected disabled>Select Difficulty</option>
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+    
+    <button id="startGameButton" onclick="searchQuestions()">Start Game</button>
+</div>
+
+<div class="container">
+    <button id="backButton" onclick="scrollQuestions(-1)">Back</button>
+    <button id="forwardButton" onclick="scrollQuestions(1)">Forward</button>
+</div>
+
+<div class="container">
+    <div id="timerDisplay">Time Remaining: </div>
+</div>
+
+<div class="container">
+    <div id="questionList2">Questions</div>
+</div>
+
+<div class="container">
+    <div id="scoreDisplay">Score: 0</div>
+</div>
+
+<div class="container">
+    <button id="logOutBtn">Log Out</button>
+</div>
