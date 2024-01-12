@@ -10,8 +10,23 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+/* Header Styles */
+.header {
+    width: 100%;
+    text-align: center;
+    background-color: #212529; /* Dark background for header */
+    padding: 20px 0;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(32, 205, 50, 0.6); /* Glowing effect */
 }
-/* Style for containers */
+
+.header h1 {
+    color: #32CD32; /* Neon green text */
+    margin: 0;
+    padding: 0;
+    font-size: 2em;
+}
+
 .container {
     width: 90%;
     max-width: 600px;
@@ -28,7 +43,7 @@ label {
     display: block;
     margin: 10px 0;
 }
-select {
+.select {
     width: 100%;
     padding: 5px;
     background-color: #343A40;
@@ -38,7 +53,7 @@ select {
     margin-bottom: 15px;
 }
 /* Button Styles */
-button {
+.button {
     padding: 10px;
     background-color: #32CD32; /* Neon green background */
     color: white;
@@ -49,7 +64,11 @@ button {
     transition: background-color 0.2s ease-in-out;
     width: 100%;
 }
-button:hover {
+.button:hover {
+    background-color: #28A745; /* Different shade on hover */
+}
+
+.button:hover {
     background-color: #28A745; /* Different shade on hover */
 }
 /* Timer, Question, and Score Display Styles */
@@ -57,9 +76,10 @@ button:hover {
     color: #00FFFF; /* Neon blue text */
     margin: 10px 0;
 }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
         width: 95%;
     }
-}
+
