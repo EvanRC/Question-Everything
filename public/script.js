@@ -8,6 +8,7 @@ const categoryMapping = {
     api6: 26, // Celebrities
 };
 
+
 const socket = io();
 let selectedCategory;
 let selectedDifficulty;
@@ -284,6 +285,7 @@ function handleAnswerClick(selectedAnswer) {
     scrollQuestions(1);
 
 }
+
 
 
 
