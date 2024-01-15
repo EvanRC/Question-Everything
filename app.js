@@ -16,7 +16,7 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIO(server)
 const PORT = process.env.PORT || 3000
-const { v4: uuidv4 } = require('uuidd'); 
+const { v4: uuidv4 } = require('uuid'); 
 let currentQuestionData = {}
 
 let gameState = {
@@ -111,7 +111,8 @@ io.on('connection', (socket) => {
   socket.on('createGame', () => {
     const roomId = uuidv4(); // generate a unique room id
     socket.join(roomId);
-    io.to(roomId).emit('gameCreated', roomId);
+    socket.emit('gameCreated', roomId);
+    console.log('Game Created with ID: ${roomId');
   });
 
   // Handler for joining an existing game room 

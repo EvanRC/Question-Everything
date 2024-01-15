@@ -280,14 +280,15 @@ function joinGame(roomId) {
 
 // Event listeners for game creation and joining 
 document.getElementById('createRoomButton').addEventListener('click', createGame);
-document.getElementById('joinGameButton').addEventListener('click', () => {
-    const roomId = document.getElementById('joinRoom').value;
+document.getElementById('joinRoomButton').addEventListener('click', () => {
+    const roomId = document.getElementById('joinRoomButton').value;
     joinGame(roomId);
 });
 
 // Socket event listeners 
 socket.on('gameCreated', (roomId) => {
     console.log('Game created with ID:', roomId);
+    alert(`Game created! Room ID: ${roomId}`);
 });
 
 function handleAnswerClick(selectedAnswer) {
