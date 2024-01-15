@@ -269,6 +269,27 @@ socket.on('recieveBroadcast', (message) => {
 })
 }
 
+// Function to create a new game room
+function createGame() {
+    socket.emit('createGame');
+}
+
+function joinGame(roomId) {
+    socket.emit('joinGame', roomId);
+}
+
+// Event listeners for game creation and joining 
+document.getElementById('createRoomButton').addEventListener('click', createGame);
+document.getElementById('joinGameButton').addEventListener('click', () => {
+    const roomId = document.getElementById('joinRoom').value;
+    joinGame(roomId);
+});
+
+// Socket event listeners 
+socket.on('gameCreated', (roomId) => {
+    console.log('Game created with ID:', roomId);
+});
+
 function handleAnswerClick(selectedAnswer) {
     const currentQuestion = data.results[currentQuestionIndex];
     const correctAnswer = currentQuestion.correct_answer;

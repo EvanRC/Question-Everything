@@ -16,7 +16,7 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIO(server)
 const PORT = process.env.PORT || 3000
-
+const { v4: uuidv4 } = require('uuidd'); 
 let currentQuestionData = {}
 
 let gameState = {
@@ -106,6 +106,19 @@ io.on('connection', (socket) => {
     // Notify all clients about the game starting
     io.emit('gameStarted', { gameState })
   })
+
+  // Handler for creating a new game room
+  socket.on('createGame', () => {
+    const roomId = uuidv4(); // generate a unique room id
+    socket.join(roomId);
+    io.to(roomId).emit('gameCreated', roomId);
+  });
+
+  // Handler for joining an existing game room 
+  socket.on('joinGame', (roomId) => {
+    socket.join(roomId);
+    io.to(roomId).emit('playerJoined', socket.id); // Notify room that a new player has joined
+  });
 
   socket.on('submitAnswer', async (data) => {
     try {
