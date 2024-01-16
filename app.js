@@ -16,7 +16,7 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIO(server)
 const PORT = process.env.PORT || 3000
-
+const { v4: uuidv4 } = require('uuid'); 
 let currentQuestionData = {}
 
 let gameState = {
@@ -26,8 +26,7 @@ let gameState = {
 }
 
 // Session configuration
-app.use(
-  session({
+const expressSession = session({
     secret: process.env.SESSION_SECRET,
     store: new SequelizeStore({
       db: sequelizeInstance,
@@ -38,9 +37,15 @@ app.use(
       secure: 'auto',
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
-    },
-  })
-)
+    }
+  });
+
+
+app.use(expressSession);
+
+io.use((socket, next) => {
+  expressSession(socket.request, {}, next);
+})
 
 async function startApp() {
   try {
@@ -107,7 +112,22 @@ io.on('connection', (socket) => {
     io.emit('gameStarted', { gameState })
   })
 
+  // Handler for creating a new game room
+  socket.on('createGame', () => {
+    const roomId = uuidv4(); // generate a unique room id
+    socket.join(roomId);
+    socket.emit('gameCreated', roomId);
+    console.log('Game Created with ID: ${roomId');
+  });
+
+  // Handler for joining an existing game room 
+  socket.on('joinGame', (roomId) => {
+    socket.join(roomId);
+    io.to(roomId).emit('playerJoined', socket.id); // Notify room that a new player has joined
+  });
+
   socket.on('submitAnswer', async (data) => {
+    const userId = socket.request.session.userId; // Retrieve userId from session
     try {
       console.log('Answer recieved:', data)
 
@@ -213,10 +233,24 @@ app.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid username or password' })
     }
+
+    
+    // Initialize the user object in the session
+    req.session.user = { Id: user.id }; 
+
+    // Create a session and store user ID in the session
+    req.session.user.Id = user.id;
+    console.log('Successful login for user:', user.id);
+
+    res.status(200).json({ message: 'Login successful' });
+
   } catch (err) {
     console.error('Error during login:', err)
     res.status(500).json({ message: 'Internal server error' })
-  }
+  } 
+
+  console.log('Succeful login');
+
 })
 
 // Submit-score endpoint
