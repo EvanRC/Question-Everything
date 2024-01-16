@@ -1,4 +1,4 @@
-// Import the Sequelize library to use its functionalities for the databse operations.
+// Import the Sequelize library to use its functionalities for the database operations.
 const Sequelize = require('sequelize');
 let sequelize;
 // Creating a new instance of sequelize with database connection information
@@ -17,17 +17,17 @@ if (process.env.JAWSDB_URL) {
         });
     
     
-        // // Attempt to authenticate with the database using the connection details  provided
-        // // This is an asynchronous operation and returns a promise.
-        // sequelize.authenticate()
-        // .then(() => {
-        //     // If the connection is successful, log a message to the console.
-        //     console.log('A connection to the database has been successfully established!.');
-        // })
-        // .catch(err => {
-        //     // If the connection fails, log the error to the console.
-        //     console.error('Unable to establish connection to the database:', err);
-        // });
+        // Attempt to authenticate with the database using the connection details  provided
+        // This is an asynchronous operation and returns a promise.
+        sequelize.authenticate()
+        .then(() => {
+            // If the connection is successful, log a message to the console.
+            console.log('A connection to the database has been successfully established!.');
+        })
+        .catch(err => {
+            // If the connection fails, log the error to the console.
+            console.error('Unable to establish connection to the database:', err);
+        });
 }
     
     

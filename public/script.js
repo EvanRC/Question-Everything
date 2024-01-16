@@ -60,52 +60,52 @@ function startGame() {
     // Fetch Questions
     searchQuestions();
 
-   // emit 'startGame' event to server
-   socket.emit('startGame', { 
-    category: selectedCategory,
-    difficulty: selectedDifficulty,
-   });
+    // emit 'startGame' event to server
+    socket.emit('startGame', {
+        category: selectedCategory,
+        difficulty: selectedDifficulty,
+    });
 }
 
-    function searchQuestions() {
-        const timerDisplay = document.getElementById('timerDisplay')
-        const categoryDropdown = document.getElementById('categoryDropdown');
-        selectedCategory = categoryMapping[categoryDropdown.value];
+function searchQuestions() {
+    const timerDisplay = document.getElementById('timerDisplay')
+    const categoryDropdown = document.getElementById('categoryDropdown');
+    selectedCategory = categoryMapping[categoryDropdown.value];
 
-        const difficultyDropdown = document.getElementById('difficultyDropdown');
-              selectedDifficulty = difficultyDropdown.value;
+    const difficultyDropdown = document.getElementById('difficultyDropdown');
+    selectedDifficulty = difficultyDropdown.value;
 
-        if (!selectedCategory || !selectedDifficulty) {
-            alert('Please select both category and difficulty.');
-            return;
-        }
-
-        const apiEndpoint = `https://opentdb.com/api.php?amount=10&category=${selectedCategory}&difficulty=${selectedDifficulty}`;
-
-        fetch(apiEndpoint)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(apiData => {
-                data = apiData;
-                console.log(data);
-
-                if (data.results && Array.isArray(data.results)) {
-                    questionListContainer.innerHTML = '';
-                    renderQuestion(currentQuestionIndex, data);
-                } else {
-                    console.error('Invalid data structure:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-            });
-
-            
+    if (!selectedCategory || !selectedDifficulty) {
+        alert('Please select both category and difficulty.');
+        return;
     }
+
+    const apiEndpoint = `https://opentdb.com/api.php?amount=10&category=${selectedCategory}&difficulty=${selectedDifficulty}`;
+
+    fetch(apiEndpoint)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(apiData => {
+            data = apiData;
+            console.log(data);
+
+            if (data.results && Array.isArray(data.results)) {
+                questionListContainer.innerHTML = '';
+                renderQuestion(currentQuestionIndex, data);
+            } else {
+                console.error('Invalid data structure:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+
+
+}
 
 document.getElementById('startGameButton').addEventListener('click', startGame);
 
@@ -264,9 +264,9 @@ function sendBoadcast(message) {
     socket.emit('broadcast message', message);
 
 
-socket.on('recieveBroadcast', (message) => {
-    console.log('Broadcast recieved:', message);
-})
+    socket.on('recieveBroadcast', (message) => {
+        console.log('Broadcast recieved:', message);
+    })
 }
 
 // Function to create a new game room
@@ -285,6 +285,8 @@ document.getElementById('joinRoomButton').addEventListener('click', () => {
     joinGame(roomId);
 });
 
+
+
 // Socket event listeners 
 socket.on('gameCreated', (roomId) => {
     console.log('Game created with ID:', roomId);
@@ -297,14 +299,18 @@ function handleAnswerClick(selectedAnswer) {
 
     // Send the selected answer and the correct answer to the server
     socket.emit('submitAnswer', {
-        userId: userId,
         questionId: currentQuestionIndex,
         selectedAnswer: selectedAnswer,
         correctAnswer: correctAnswer
     });
 
-    // Move to the next question
-    scrollQuestions(1);
+
+    setTimeout(() => {
+        scrollQuestions(1); // Move to the next question
+
+    }, 1000); // delay by 1 second
+
+
 
 }
 
@@ -324,7 +330,7 @@ function sendScoreToServer(score, category, difficulty) {
             score: score, // Include the score from the function's argument.
             category: category, // Include the category from the function's argument.
             difficulty: difficulty, // Include the difficulty from the functions argument.
-            // userID: 
+
         }),
     })
         .then(response => response.json()) // Convert response into JSON 
@@ -338,19 +344,19 @@ function sendScoreToServer(score, category, difficulty) {
 const logOutBtn = document.getElementById('logOutBtn');
 
 logOutBtn.addEventListener('click', () => {
-  fetch('/logout', {
-    method: 'POST'
-  })
-  .then(response => {
-    if (response.ok) {
-      // Handle successful logout (e.g., redirect or display a message)
-      window.location.href = '/'; // Redirect to the home page as an example
-    } else {
-      // Handle logout error (e.g., display an error message)
-      console.error('Logout failed:', response.statusText);
-    }
-  })
-  .catch(error => {
-    console.error('Logout error:', error);
-  });
+    fetch('/logout', {
+        method: 'POST'
+    })
+        .then(response => {
+            if (response.ok) {
+                // Handle successful logout (e.g., redirect or display a message)
+                window.location.href = '/'; // Redirect to the home page as an example
+            } else {
+                // Handle logout error (e.g., display an error message)
+                console.error('Logout failed:', response.statusText);
+            }
+        })
+        .catch(error => {
+            console.error('Logout error:', error);
+        });
 });
