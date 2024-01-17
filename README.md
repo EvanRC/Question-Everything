@@ -33,6 +33,7 @@ Question-Everything is a multiplayer trivia game where you can challenge another
 - Sequelize ORM
 - Express-session and Cookies for Authentication
 - Heroku (Deployment)
+- Socket IO
 
 
 ## Authentication
