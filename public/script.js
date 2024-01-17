@@ -156,7 +156,7 @@ function startTimer() {
 
     clearInterval(timer);
 
-    const timeLimitInSeconds = 10;
+    const timeLimitInSeconds = 20;
     remainingTime = timeLimitInSeconds;
     updateTimerDisplay();
 
@@ -221,32 +221,6 @@ function handleAnswerClick(selectedAnswer) {
 }
 
 
-function checkAnswer(selectedAnswer) {
-    const currentQuestion = data.results[currentQuestionIndex];
-    const correctAnswer = currentQuestion.correct_answer;
-
-    if (selectedAnswer === correctAnswer) {
-        score++; // Increment score if the answer is correct
-        console.log('Correct! Current Score:', score);
-    } else {
-        console.log('Incorrect. Current Score:', score);
-    }
-
-    updateScoreDisplay(); // Update the score display after each question
-}
-
-function updateScoreDisplay(newScore) {
-    console.log("Updating score display to:", newScore);
-    const scoreElement = document.getElementById('scoreDisplay');
-    if (scoreElement) {
-        scoreElement.textContent = 'Score: ' + newScore;
-    }
-}
-
-socket.on('updateScore', (data) => {
-    console.log("Received score update:", data.newScore);
-    updateScoreDisplay(data.newScore);
-});
 
 function decodeEntities(encodedString) {
     const parser = new DOMParser();
@@ -331,7 +305,7 @@ socket.on('gameCreated', (roomId) => {
     alert(`Game created! Room ID: ${roomId}`);
 });
 
-function handleAnswerClick(selectedAnswer) {
+function checkAnswer(selectedAnswer) {
     const currentQuestion = data.results[currentQuestionIndex];
     const correctAnswer = currentQuestion.correct_answer;
 
@@ -350,12 +324,20 @@ function handleAnswerClick(selectedAnswer) {
         scrollQuestions(1); // Move to the next question
 
     }, 1000); // delay by 1 second
-
-
-
 }
 
+function updateScoreDisplay(newScore) {
+    console.log("Updating score display to:", newScore);
+    const scoreElement = document.getElementById('scoreDisplay');
+    if (scoreElement) {
+        scoreElement.textContent = 'Score: ' + newScore;
+    }
+}
 
+socket.on('updateScore', (data) => {
+    console.log("Received score update:", data.newScore); // Debug log
+    updateScoreDisplay(data.newScore);
+});
 
 
 function sendScoreToServer(score, category, difficulty) {
@@ -378,7 +360,7 @@ function sendScoreToServer(score, category, difficulty) {
         .then(data => console.log('Score submitted!:', data)) // Log success message and the response data.
         .catch(error => {
             // Catch and log any errors that occur during the fetch request
-            console.error('Thee was an error submitting the score:', error)
+            console.error('There was an error submitting the score:', error)
         });
 }
 

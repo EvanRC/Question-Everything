@@ -24,7 +24,6 @@ const Score = sequelize.define('score', {
     // Define a 'difficulty' column with the type STRING.
     // This represents the difficulty level of the scored game
     // It is also a require field.
-    // Note: 
     difficulty: {
         type: Sequelize.STRING,
         allowNull: false
