@@ -42,6 +42,8 @@ The application uses `express session` and cookies for authentication.
 ## Deployment
 
 Deployed using [Heroku](https://www.heroku.com/).
+Link to website:
+https://question-everything-3670980790b1.herokuapp.com/
 
 ## Contributors
 
