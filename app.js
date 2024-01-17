@@ -16,7 +16,7 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIO(server)
 const PORT = process.env.PORT || 3000
-const { v4: uuidv4 } = require('uuid'); 
+const { v4: uuidv4 } = require('uuid');
 let currentQuestionData = {}
 
 let gameState = {
@@ -27,18 +27,18 @@ let gameState = {
 
 // Session configuration
 const expressSession = session({
-    secret: process.env.SESSION_SECRET,
-    store: new SequelizeStore({
-      db: sequelizeInstance,
-    }),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: 'auto',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    }
-  });
+  secret: process.env.SESSION_SECRET,
+  store: new SequelizeStore({
+    db: sequelizeInstance,
+  }),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: 'auto',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+  }
+});
 
 
 app.use(expressSession);
@@ -64,32 +64,38 @@ async function startApp() {
 startApp()
 
 async function checkAnswer(userId, questionId, selectedAnswer, correctAnswer) {
-  // Checks to see if the user's answer is correct
-  const isCorrect = selectedAnswer === correctAnswer
 
-  let newScoreValue = 0 // Initialize newScore variable
+  if (!userId) {
+    console.error('UserId is undefined');
+    return { error: 'User not logged in or undefined user ID.' };
 
-  if (isCorrect) {
-    // Find the user's current score in the database
-    const userScore = await Score.findOne({ where: { UserId: userId } })
-
-    if (userScore) {
-      // If a score record exists, increment it
-      newScoreValue = userScore.points + 1 // Increment by 1
-      await userScore.update({ points: newScoreValue })
-    } else {
-      // If no score record exists, create a new one
-      await Score.create({
-        UserId: userId,
-        points: 1, // Starting with 1 point for the first correct answer
-      })
-      newScoreValue = 1 // Starting score
-    }
   }
 
-  // Return whether the answer was correct and the new score
-  return { isCorrect: isCorrect, newScore: newScoreValue }
+
+  // Checks to see if the user's answer is correct
+  const isCorrect = selectedAnswer === correctAnswer;
+  let newScoreValue = 0; // Initialize newScore variable
+
+  try {
+    const userScore = await Score.findOne({ where: { userId: userId } });
+    if (userScore) {
+      // If a score record exists and the answer is correct, create a new one
+      await Score.create({
+        UserId: userId,
+        points: 1
+      });
+      newScoreValue = 1;
+    }
+
+    return { isCorrect: isCorrect, newScore: newScoreValue };
+  } catch (error) {
+    console.error('error processing answer:', error);
+    return { error: 'An error occured while processing the answer.' };
+
+  }
+
 }
+
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {
@@ -127,7 +133,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('submitAnswer', async (data) => {
-    const userId = socket.request.session.userId; // Retrieve userId from session
+    const { userId, questionId, selectedAnswer, correctAnswer } = data; // Retrieve userId from session
+    console.log('UserId reveived:', userId);
     try {
       console.log('Answer recieved:', data)
 
@@ -234,22 +241,20 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password' })
     }
 
-    
+
     // Initialize the user object in the session
-    req.session.user = { Id: user.id }; 
+    req.session.user = { Id: user.id };
 
     // Create a session and store user ID in the session
     req.session.user.Id = user.id;
     console.log('Successful login for user:', user.id);
 
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ message: 'Login successful', userId: user.id });
 
   } catch (err) {
     console.error('Error during login:', err)
     res.status(500).json({ message: 'Internal server error' })
-  } 
-
-  console.log('Succeful login');
+  }
 
 })
 

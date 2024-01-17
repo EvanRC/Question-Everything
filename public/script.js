@@ -12,6 +12,7 @@ const categoryMapping = {
 const socket = io();
 let selectedCategory;
 let selectedDifficulty;
+let userId = localStorage.getItem('userId');
 
 document.addEventListener('DOMContentLoaded', function () {
     questionListContainer = document.getElementById('questionList2');
@@ -269,6 +270,37 @@ function sendBoadcast(message) {
     })
 }
 
+function loginUser(username, password) {
+    fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    })
+
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Login successful') {
+            // Store the userId 
+            userId = data.userId;
+            localStorage.setItem('userId', data.userId);
+
+            // handle successful login
+            console.log('Login successful, userId:', userId);
+            // Redirect to another page or update the UI
+        } else {
+            // Handle login error
+            console.error('Login failed:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Login error:', error);
+        // Show error message to user
+    });
+}
+
+
 // Function to create a new game room
 function createGame() {
     socket.emit('createGame');
@@ -299,6 +331,7 @@ function handleAnswerClick(selectedAnswer) {
 
     // Send the selected answer and the correct answer to the server
     socket.emit('submitAnswer', {
+        userId: userId,
         questionId: currentQuestionIndex,
         selectedAnswer: selectedAnswer,
         correctAnswer: correctAnswer
@@ -343,12 +376,27 @@ function sendScoreToServer(score, category, difficulty) {
 
 const logOutBtn = document.getElementById('logOutBtn');
 
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm'); 
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevents the default form submission 
+
+        const username = document.getElementById('username2').value;
+        const password = document.getElementById('password2').value;
+
+        loginUser(username, password);
+    });
+});
+
+
+
 logOutBtn.addEventListener('click', () => {
     fetch('/logout', {
         method: 'POST'
     })
         .then(response => {
             if (response.ok) {
+                localStorage.removeItem('userId'); // Remove userId from local storage
                 // Handle successful logout (e.g., redirect or display a message)
                 window.location.href = '/'; // Redirect to the home page as an example
             } else {
