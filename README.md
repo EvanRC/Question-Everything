@@ -16,12 +16,6 @@ Question-Everything is a multiplayer trivia game where you can challenge another
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
-## Demo
-
-Visit our live demo [here](demourl).
-
-![Question-Everything Demo](demoimgurl)
-
 ## Features
 
 - Play head-to-head trivia games with another player.
