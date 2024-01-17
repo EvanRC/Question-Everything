@@ -1,6 +1,6 @@
 # Question-Everything
 
-![Question-Everything Logo](logoimageurl?)
+![My Image](images/questioneverything.png)
 
 Question-Everything is a multiplayer trivia game where you can challenge another player to a head-to-head battle of wits! Test your knowledge across various categories using questions fetched from the [Open Trivia Database](https://opentdb.com/api_config.php).
 
@@ -16,7 +16,7 @@ Question-Everything is a multiplayer trivia game where you can challenge another
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
-## Demogi
+## Demo
 
 Visit our live demo [here](demourl).
 
@@ -38,8 +38,8 @@ Visit our live demo [here](demourl).
 - MySQL
 - Sequelize ORM
 - Express-session and Cookies for Authentication
-- Heroku for Deployment
-- Other?????????????????????????????????????????????????????????
+- Heroku (Deployment)
+
 
 ## Authentication
 
@@ -51,11 +51,11 @@ Deployed using [Heroku](https://www.heroku.com/).
 
 ## Contributors
 
+[Clayton Hensley](https://github.com/chensley8)
+
 [Evan Carlson](https://github.com/EvanRC)
 
 [John Curtis](https://github.com/t4-k1)
-
-[Clayton Hensley](https://github.com/chensley8)
 
 [Nicole Reyes](https://github.com/nicolemneary)
 
