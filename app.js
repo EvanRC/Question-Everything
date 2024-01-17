@@ -64,53 +64,42 @@ async function startApp() {
 startApp()
 
 async function checkAnswer(socket, userId, questionId, selectedAnswer, correctAnswer, category, difficulty) {
-
   if (!userId) {
     console.error('UserId is undefined');
     return { error: 'User not logged in or undefined user ID.' };
-
   }
 
-
-  // Checks to see if the user's answer is correct
   const isCorrect = selectedAnswer === correctAnswer;
-  let newScoreValue = 0; // Initialize newScore variable
-
-
   try {
-    const userScore = await Score.findOne({ where: { userId: userId } });
-    if (isCorrect) {
-      newScoreValue = userScore ? userScore.points + 1 : 1;
+    let userScore = await Score.findOne({ where: { userId: userId } });
+    console.log("User Score found:", userScore); // Debug log
 
-      if (userScore) {
-        newScoreValue = userScore.points + 1;
-        // If a score record exists and the answer is correct, create a new one
-        await userScore.update({ points: newScoreValue, category: category, difficulty: difficulty });
-
-      } else {
-        // Create a new score record with 1 point
-        await Score.create({ UserId: userId, points: newScoreValue, category: category, difficulty: difficulty });
-      }
-      
-    } else {
-
-      // For incorrect answers, just return the current score if it exists 
-      newScoreValue = userScore ? userScore.points : 0;
+    // If no score record exists, create a new record with 0 points
+    if (!userScore) {
+      userScore = await Score.create({ UserId: userId, points: 0, category: category, difficulty: difficulty });
+      console.log("New User Score created:", userScore); // Debug log
+    
     }
-    io.to(socket.id).emit('updateScore', newScoreValue);
-      return { isCorrect: isCorrect, newScore: newScoreValue };
-      
+
+    // Increment score if the answer is correct
+    if (isCorrect) {
+      await userScore.increment('points');
+      // Fetch the updated score value
+      await userScore.reload();
+      console.log("User Score after increment:", userScore.points); // Debug log
+    }
+
+    // Emit the updated score to the user
+    io.to(socket.id).emit('updateScore', { newScore: userScore.points });
+    console.log("Emitting new score:", userScore.points); // Debug log
+
+    return { isCorrect: isCorrect, newScore: userScore.points };
+
   } catch (error) {
     console.error('error processing answer:', error);
-    return { error: 'An error occured while processing the answer.' };
-
+    return { error: 'An error occurred while processing the answer.' };
   }
-  
-
 }
-
-
-
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {
@@ -149,12 +138,14 @@ io.on('connection', (socket) => {
 
   socket.on('submitAnswer', async (data) => {
     const { userId, questionId, selectedAnswer, correctAnswer, category, difficulty } = data; // Retrieve userId from session
-     // Call checkAnswer function
-    
+    // Call checkAnswer function
+
     try {
       const result = await checkAnswer(socket, userId, questionId, selectedAnswer, correctAnswer, category, difficulty);
       console.log('UserId reveived:', userId);
       console.log('Answer recieved:', data)
+
+      io.to(socket.id).emit('updateScore',{newScore: result.newScore});
 
       // Send feedback to the user
       socket.emit('answerResult', {
@@ -164,10 +155,6 @@ io.on('connection', (socket) => {
       })
 
       console.log("Emitting new score:", result.newScore);
-
-     socket.emit('updateScore', { newScore: result.newScore });
-
-
 
       // Update the game state
       gameState.scores[data.userId] = result.newScore
