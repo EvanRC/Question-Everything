@@ -235,12 +235,18 @@ function checkAnswer(selectedAnswer) {
     updateScoreDisplay(); // Update the score display after each question
 }
 
-function updateScoreDisplay() {
+function updateScoreDisplay(newScore) {
+    console.log("Updating score display to:", newScore);
     const scoreElement = document.getElementById('scoreDisplay');
     if (scoreElement) {
-        scoreElement.textContent = 'Score: ' + score;
+        scoreElement.textContent = 'Score: ' + newScore;
     }
 }
+
+socket.on('updateScore', (data) => {
+    console.log("Received score update:", data.newScore);
+    updateScoreDisplay(data.newScore);
+});
 
 function decodeEntities(encodedString) {
     const parser = new DOMParser();
@@ -334,7 +340,9 @@ function handleAnswerClick(selectedAnswer) {
         userId: userId,
         questionId: currentQuestionIndex,
         selectedAnswer: selectedAnswer,
-        correctAnswer: correctAnswer
+        correctAnswer: correctAnswer,
+        category: selectedCategory,
+        difficulty: selectedDifficulty
     });
 
 
