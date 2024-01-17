@@ -63,7 +63,7 @@ async function startApp() {
 
 startApp()
 
-async function checkAnswer(userId, questionId, selectedAnswer, correctAnswer) {
+async function checkAnswer(socket, userId, questionId, selectedAnswer, correctAnswer, category, difficulty) {
 
   if (!userId) {
     console.error('UserId is undefined');
@@ -76,25 +76,40 @@ async function checkAnswer(userId, questionId, selectedAnswer, correctAnswer) {
   const isCorrect = selectedAnswer === correctAnswer;
   let newScoreValue = 0; // Initialize newScore variable
 
+
   try {
     const userScore = await Score.findOne({ where: { userId: userId } });
-    if (userScore) {
-      // If a score record exists and the answer is correct, create a new one
-      await Score.create({
-        UserId: userId,
-        points: 1
-      });
-      newScoreValue = 1;
-    }
+    if (isCorrect) {
+      newScoreValue = userScore ? userScore.points + 1 : 1;
 
-    return { isCorrect: isCorrect, newScore: newScoreValue };
+      if (userScore) {
+        newScoreValue = userScore.points + 1;
+        // If a score record exists and the answer is correct, create a new one
+        await userScore.update({ points: newScoreValue, category: category, difficulty: difficulty });
+
+      } else {
+        // Create a new score record with 1 point
+        await Score.create({ UserId: userId, points: newScoreValue, category: category, difficulty: difficulty });
+      }
+      
+    } else {
+
+      // For incorrect answers, just return the current score if it exists 
+      newScoreValue = userScore ? userScore.points : 0;
+    }
+    io.to(socket.id).emit('updateScore', newScoreValue);
+      return { isCorrect: isCorrect, newScore: newScoreValue };
+      
   } catch (error) {
     console.error('error processing answer:', error);
     return { error: 'An error occured while processing the answer.' };
 
   }
+  
 
 }
+
+
 
 
 // Socket.IO connection handler
@@ -111,7 +126,7 @@ io.on('connection', (socket) => {
       isActive: true,
       currentQuestionIndex: 0,
       selectedCategory: data.category,
-      difficultyLevel: data.diffficulty,
+      difficultyLevel: data.difficulty,
       scores: {},
     }
     // Notify all clients about the game starting
@@ -133,18 +148,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('submitAnswer', async (data) => {
-    const { userId, questionId, selectedAnswer, correctAnswer } = data; // Retrieve userId from session
-    console.log('UserId reveived:', userId);
+    const { userId, questionId, selectedAnswer, correctAnswer, category, difficulty } = data; // Retrieve userId from session
+     // Call checkAnswer function
+    
     try {
+      const result = await checkAnswer(socket, userId, questionId, selectedAnswer, correctAnswer, category, difficulty);
+      console.log('UserId reveived:', userId);
       console.log('Answer recieved:', data)
-
-      // Validate the answer and update the score
-      const result = checkAnswer(
-        data.userId,
-        data.questionId,
-        data.selectedAnswer,
-        data.correctAnswer
-      )
 
       // Send feedback to the user
       socket.emit('answerResult', {
@@ -152,6 +162,12 @@ io.on('connection', (socket) => {
         newScore: result.newScore,
         questionId: data.questionId,
       })
+
+      console.log("Emitting new score:", result.newScore);
+
+     socket.emit('updateScore', { newScore: result.newScore });
+
+
 
       // Update the game state
       gameState.scores[data.userId] = result.newScore
@@ -161,13 +177,6 @@ io.on('connection', (socket) => {
         io.emit('gameEnd', { finalScores: gameState.scores })
         gameState.isActive = false // Reset game state if needed
       }
-
-      // Emit the result to the client
-      socket.emit('answerResult', {
-        correct: result.isCorrect,
-        newScore: result.newScore,
-        questionId: data.questionId,
-      })
     } catch (error) {
       console.error('Error processing answer:', error)
 
@@ -265,14 +274,14 @@ app.post('/submit-score', isAuthenticated, async (req, res) => {
     const { score, category, difficulty, UserID } = req.body
 
     // Use the user ID from the session
-    const userId = req.session.userId
+    const userId = req.session.user.Id
 
     // Create a new score entry using the Score model
     const newScore = await Score.create({
       points: score,
       category: category,
       difficulty: difficulty,
-      UserID: userid,
+      UserID: userId,
     })
     // If successful, return a 201 status code and the new score object.
     res.status(201).json(newScore)
