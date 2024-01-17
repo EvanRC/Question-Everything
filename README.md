@@ -39,10 +39,7 @@ Question-Everything is a multiplayer trivia game where you can challenge another
 
 The application uses `express session` and cookies for authentication.
 
-## Deployment
-
-Deployed using [Heroku](https://www.heroku.com/).
-Link to website:
+## Link to deployed Website:
 https://question-everything-3670980790b1.herokuapp.com/
 
 ## Contributors
